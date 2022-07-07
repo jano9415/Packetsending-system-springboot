@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+		<link type="text/css" href="css/style.css" th:href="@{/css/style.css}"  rel="stylesheet"/>
+		<title>Bejelentkezés</title>
+	
+	<body>
+		<div class="icon-bar">
+			<a class="active" href="/index">Főoldal</a>
+	  		<a href="/login">Bejelentkezés</a>
+	  		<a href="/signup">Regisztráció</a>
+	  		<a href="/packetsending">Csomag feladás</a>
+	  		<a href="/packettaking">Csomag átvétel</a>
+		</div>
+		<div>
+			<form th:action="@{/login}" method="POST" name="login">
+				<label>Felhasználói név</label>
+					<input type="text" id="email_address" name="email_address"/>
+				<label>Jelszó</label>
+					<input type="password" id="password" name="password"/>
+				<button type="submit">Bejelentkezés</button>
+			</form>
+		</div>
+
+	</body>
+</html>

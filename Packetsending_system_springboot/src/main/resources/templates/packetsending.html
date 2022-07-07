@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+		<link type="text/css" href="css/style.css"  rel="stylesheet"/>
+		<title>Csomagküldés</title>
+	
+	<body>
+		<div class="icon-bar">
+			<a class="active" href="/index">Főoldal</a>
+	  		<a href="/login">Bejelentkezés</a>
+	  		<a href="/signup">Regisztráció</a>
+	  		<a href="/packetsending">Csomag feladás</a>
+	  		<a href="/packettaking">Csomag átvétel</a>
+		</div>
+		<div>
+			<p>Csomag küldése</p>
+			<table id="packetSendingContainer">
+				<tr>
+				</tr>
+			</table>
+			<div class="packetSendingFormContainer">
+				<form class="packetSendingForm">
+					<label>A csomag szélessége</label>
+						<input type="text"/>
+					<label>A csomag magassága</label>
+						<input type="text"/>
+					<label>A csomag hossza</label>
+						<input type="text"/>
+					<label>Átvevő vezeték neve</label>
+						<input type="text"/>
+					<label>Átvevő kereszt neve</label>
+						<input type="text"/>
+					<label>Átvevő email címe</label>
+						<input type="text"/>
+					<label>A csomag ára</label>
+						<input type="text"/>
+					<label>Válassz automatát, ahová küldeni szeretnéd a csomagot.</label>
+						<select>
+							<option>Veszprém</option>
+							<option>Székesfehérvár</option>
+							<option>Tapolca</option>
+						</select>
+					<button type="submit">Küldés</button>
+				</form>
+			</div>
+		</div>
+
+	</body>
+</html>
