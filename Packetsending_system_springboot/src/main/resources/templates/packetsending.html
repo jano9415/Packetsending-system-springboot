@@ -12,6 +12,8 @@
 	  		<a href="/signup">Regisztráció</a>
 	  		<a href="/packetsending">Csomag feladás</a>
 	  		<a href="/packettaking">Csomag átvétel</a>
+	  		<a href="/containerfilling">Automata feltöltése</a>
+	  		<a href="/containeremptying">Automata kiürítése</a>
 		</div>
 		<div>
 			<p>Csomag küldése</p>
@@ -19,14 +21,14 @@
 				<tr>
 				</tr>
 			</table>
-			<div class="packetSendingFormContainer">
+			<div class="packetSendingFormDiv">
 				<form class="packetSendingForm">
 					<label>A csomag szélessége</label>
-						<input type="text"/>
+						<input type="number"/>
 					<label>A csomag magassága</label>
-						<input type="text"/>
+						<input type="number"/>
 					<label>A csomag hossza</label>
-						<input type="text"/>
+						<input type="number"/>
 					<label>Átvevő vezeték neve</label>
 						<input type="text"/>
 					<label>Átvevő kereszt neve</label>
@@ -34,7 +36,7 @@
 					<label>Átvevő email címe</label>
 						<input type="text"/>
 					<label>A csomag ára</label>
-						<input type="text"/>
+						<input type="number"/>
 					<label>Válassz automatát, ahová küldeni szeretnéd a csomagot.</label>
 						<select>
 							<option>Veszprém</option>

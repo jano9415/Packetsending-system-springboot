@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class HomeController {
 	
+	//Főoldal megjelenítése
 	@RequestMapping("/index")
 	public String index() {
 		return "index";
@@ -33,6 +34,20 @@ public class HomeController {
 	@RequestMapping("/packettaking")
 	public String packetTaking() {
 		return "packettaking";
+	}
+	
+	//Automata feltöltése oldal megjelenítése
+	@RequestMapping("/containerfilling")
+	public String containerfilling()
+	{
+		return "containerfilling";
+	}
+	
+	//Automata kiürítése oldal megjelenítése
+	@RequestMapping("/containeremptying")
+	public String containeremptying()
+	{
+		return "containeremptying";
 	}
 
 }

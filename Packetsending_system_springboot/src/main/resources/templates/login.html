@@ -12,15 +12,29 @@
 	  		<a href="/signup">Regisztráció</a>
 	  		<a href="/packetsending">Csomag feladás</a>
 	  		<a href="/packettaking">Csomag átvétel</a>
+	  		<a href="/containerfilling">Automata feltöltése</a>
+	  		<a href="/containeremptying">Automata kiürítése</a>
 		</div>
-		<div>
-			<form th:action="@{/login}" method="POST" name="login">
-				<label>Felhasználói név</label>
-					<input type="text" id="email_address" name="email_address"/>
-				<label>Jelszó</label>
-					<input type="password" id="password" name="password"/>
-				<button type="submit">Bejelentkezés</button>
-			</form>
+		<div class="contentContainer">
+			<div class="loginFormDiv">
+				<form class="loginForm">
+					<label>Felhasználói név</label>
+						<input type="text"/>
+					<label>Jelszó</label>
+						<input type="password"/>
+					<button type="submit">Bejelentkezés</button>
+				</form>
+			</div>
+				<div class="courierLoginFormDiv">
+					<form class="courierLoginForm">
+						<label>Futár azonosító</label>
+							<input type="text"/>
+						<label>Jelszó</label>
+							<input type="password"/>
+						<button type="submit">Bejelentkezés</button>
+					</form>
+				</div>
+			</div>
 		</div>
 
 	</body>
