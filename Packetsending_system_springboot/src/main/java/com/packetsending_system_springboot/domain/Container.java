@@ -1,7 +1,18 @@
 package com.packetsending_system_springboot.domain;
 
+import java.util.Set;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+@Entity
 public class Container {
 	
+	@Id
+	@GeneratedValue
 	private Long id;
 	
 	private int postCode;
@@ -12,6 +23,12 @@ public class Container {
 	
 	private int amountOfBoxes;
 	
+	@OneToMany(mappedBy = "shippingFrom")
+	private Set<Package> packagesFrom;
+	
+	@OneToMany(mappedBy = "shippingTo")
+	private Set<Package> packagesTo;
+	
 	
 
 	public Container() {
@@ -19,8 +36,7 @@ public class Container {
 	}
 		
 
-	public Container(Long id, int postCode, String city, String address, int amountOfBoxes) {
-		this.id = id;
+	public Container(int postCode, String city, String address, int amountOfBoxes) {
 		this.postCode = postCode;
 		this.city = city;
 		this.address = address;
@@ -32,9 +48,6 @@ public class Container {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public int getPostCode() {
 		return postCode;
@@ -67,6 +80,28 @@ public class Container {
 	public void setAmountOfBoxes(int amountOfBoxes) {
 		this.amountOfBoxes = amountOfBoxes;
 	}
+
+
+	public Set<Package> getPackagesFrom() {
+		return packagesFrom;
+	}
+
+
+	public void setPackagesFrom(Set<Package> packagesFrom) {
+		this.packagesFrom = packagesFrom;
+	}
+
+
+	public Set<Package> getPackagesTo() {
+		return packagesTo;
+	}
+
+
+	public void setPackagesTo(Set<Package> packagesTo) {
+		this.packagesTo = packagesTo;
+	}
+	
+	
 	
 	
 	

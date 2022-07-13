@@ -1,7 +1,19 @@
 package com.packetsending_system_springboot.domain;
 
-public class User {
+import java.util.Set;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "registrateduser")
+public class User {
+	
+	@Id
+	@GeneratedValue
 	private Long id;
 	
 	private String emailAddress;
@@ -20,13 +32,20 @@ public class User {
 	
 	private String phoneNumber;
 	
+	//Kétoldali kapcsolat a package és a user között.
+	//A package osztály a birtokos.
+	//Az idegen kulcs a package táblában van.
+	//Egy regisztrált felhasználó rendelkezik több csomaggal.
+	@OneToMany(mappedBy = "user")
+	private Set<Package> packages;
+	
+
 	public User() {
 		
 	}
 
-	public User(Long id, String emailAddress, String password, String firstName, String lastName, int postCode,
+	public User(String emailAddress, String password, String firstName, String lastName, int postCode,
 			String city, String address, String phoneNumber) {
-		this.id = id;
 		this.emailAddress = emailAddress;
 		this.password = password;
 		this.firstName = firstName;
@@ -39,10 +58,6 @@ public class User {
 
 	public Long getId() {
 		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getEmailAddress() {
@@ -107,6 +122,14 @@ public class User {
 
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
+	}
+	
+	public Set<Package> getPackages() {
+		return packages;
+	}
+
+	public void setPackages(Set<Package> packages) {
+		this.packages = packages;
 	}
 	
 	

@@ -1,7 +1,14 @@
 package com.packetsending_system_springboot.domain;
 
-public class Box {
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
+@Entity
+public class Box {
+	
+	@Id
+	@GeneratedValue
 	private Long id;
 	
 	private int maxWidth;
@@ -14,8 +21,7 @@ public class Box {
 	}
 	
 
-	public Box(Long id, int maxWidth, int maxHeight, int maxLength) {
-		this.id = id;
+	public Box(int maxWidth, int maxHeight, int maxLength) {
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
 		this.maxLength = maxLength;
@@ -24,11 +30,6 @@ public class Box {
 
 	public Long getId() {
 		return id;
-	}
-
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 

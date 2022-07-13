@@ -3,19 +3,42 @@ package com.packetsending_system_springboot.domain;
 import java.sql.Date;
 import java.sql.Time;
 
-public class Package {
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
+@Entity
+public class Package {
+	
+	@Id
+	@GeneratedValue
 	private Long id;
 	
 	private String uniquePackageId;
 	
-	//Idegen kulcs a User tábla id attribútumra
-	private User userId;
+	//Kétoldali kapcsolat a Package és a User között.
+	//Idegen kulcs a User tábla id attribútumára
+	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
+	//Több csomag csak egy regisztrált felhasználóhoz tartozhat.
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 	
-	//Idegen kulcs a Container tábla id attribútumára 
+	//Kétoldali kapcsolat a Package és a Container között
+	//Idegen kulcs a Container tábla id attribútumára
+	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
+	//Több csomag csak egy feladó konténer objektumhoz tartozhat
+	@ManyToOne
+	//@JoinColumn(name ="container_id")
 	private Container shippingFrom;
 	
+	//Kétoldali kapcsolat a Package és a Container között
 	//Idegen kulcs a Container tábla id attribútumára
+	@ManyToOne
+	//@JoinColumn(name = "container_id")
 	private Container shippingTo;
 	
 	private int width;
@@ -54,13 +77,12 @@ public class Package {
 
 
 
-	public Package(Long id, String uniquePackageId, User userId, Container shippingFrom, Container shippingTo,
+	public Package(String uniquePackageId, User userId, Container shippingFrom, Container shippingTo,
 			int width, int height, int length, int price, String receiverFirstName, String receiverLastName,
 			String receiverEmailAddress, boolean packageIsShipped, boolean packageIsTaken, Date sendingDate,
 			Time sendingTime, Date takingDate, Time takingTime, Date shippingDate, Time shippingTime) {
-		this.id = id;
 		this.uniquePackageId = uniquePackageId;
-		this.userId = userId;
+		this.user = userId;
 		this.shippingFrom = shippingFrom;
 		this.shippingTo = shippingTo;
 		this.width = width;
@@ -86,10 +108,6 @@ public class Package {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getUniquePackageId() {
 		return uniquePackageId;
 	}
@@ -98,12 +116,12 @@ public class Package {
 		this.uniquePackageId = uniquePackageId;
 	}
 
-	public User getUserId() {
-		return userId;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUserId(User userId) {
-		this.userId = userId;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public Container getShippingFrom() {

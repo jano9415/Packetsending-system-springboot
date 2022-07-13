@@ -1,7 +1,14 @@
 package com.packetsending_system_springboot.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
 public class Courier {
 	
+	@Id
+	@GeneratedValue
 	private Long id;
 	
 	private String uniqueCourierId;
@@ -12,8 +19,7 @@ public class Courier {
 		
 	}
 
-	public Courier(Long id, String uniqueCourierId, String password) {
-		this.id = id;
+	public Courier(String uniqueCourierId, String password) {
 		this.uniqueCourierId = uniqueCourierId;
 		this.password = password;
 	}
@@ -22,9 +28,6 @@ public class Courier {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getUniqueCourierId() {
 		return uniqueCourierId;
