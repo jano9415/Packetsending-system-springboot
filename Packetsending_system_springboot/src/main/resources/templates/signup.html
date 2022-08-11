@@ -18,23 +18,23 @@
 		<div>
 			<p>Regisztráció</p>
 			<div class="signUpFormDiv">
-				<form class="signUpForm">
+				<form class="signUpForm" th:action="@{/signupform}" th:object="${user}" method="POST">
 					<label>Email cím</label>
-						<input type="text"/>
+						<input type="text" id="emailAddress" name="emailAddress" th:field="*{emailAddress}"/>
 					<label>Jelszó</label>
-						<input type="password"/>
+						<input type="password" id="password" name="password" th:field="*{password}"/>
 					<label>Vezetéknév</label>
-						<input type="text"/>
+						<input type="text" id="lastName" name="lastName" th:field="*{lastName}"/>
 					<label>Keresztnév</label>
-						<input type="text"/>
+						<input type="text" id="firstName" name="firstName" th:field="*{firstName}"/>
 					<label>Irányítószám</label>
-						<input type="number"/>
+						<input type="number" id="postcode" name="postcode" th:field="*{postCode}"/>
 					<label>Város</label>
-						<input type="text"/>
+						<input type="text" id="city" name="city" th:field="*{city}"/>
 					<label>Utca</label>
-						<input type="text"/>
+						<input type="text" id="address" name="address" th:field="*{address}"/>
 					<label>Telefon szám</label>
-						<input type="text"/>
+						<input type="text" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}"/>
 					<button type="submit">Küldés</button>
 				</form>
 			</div>

@@ -2,11 +2,16 @@ package com.packetsending_system_springboot.domain;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
@@ -22,7 +27,7 @@ public class Package {
 	//Kétoldali kapcsolat a Package és a User között.
 	//Idegen kulcs a User tábla id attribútumára
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
-	//Több csomag csak egy regisztrált felhasználóhoz tartozhat.
+	//Egy csomag csak egy regisztrált felhasználóhoz tartozhat.
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
@@ -30,16 +35,51 @@ public class Package {
 	//Kétoldali kapcsolat a Package és a Container között
 	//Idegen kulcs a Container tábla id attribútumára
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
-	//Több csomag csak egy feladó konténer objektumhoz tartozhat
+	//Egy csomag objektum egy feladási container objektumot tartalmaz.
 	@ManyToOne
 	//@JoinColumn(name ="container_id")
 	private Container shippingFrom;
 	
 	//Kétoldali kapcsolat a Package és a Container között
 	//Idegen kulcs a Container tábla id attribútumára
+	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
+	//Egy csomag objektum egy érkezési container objektumot tartalmaz.
 	@ManyToOne
 	//@JoinColumn(name = "container_id")
 	private Container shippingTo;
+	
+	//Kétoldali kapcsolat a Package és a Box között
+	//Idegen kulcs a Box tábla id attribútumára
+	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
+	//Egy csomag objektum egy box objektumot tartalmaz. 
+	@ManyToOne
+	@JoinColumn(name = "box_id")
+	private Box box;
+	
+	//packages_during_shipping kapcsolótábla
+	//ez az osztály a birtokos
+	@ManyToOne
+	@JoinTable(
+			name = "packages_during_shipping",
+			joinColumns = {@JoinColumn(name = "package_id")},
+			inverseJoinColumns = {@JoinColumn(name = "courier_id")})
+	private Courier courier;
+	
+	//packages_in_container kapcsolótábla
+	//ez az osztály a birtokos
+	@ManyToMany
+	@JoinTable(
+			name = "packages_in_container",
+			joinColumns = {@JoinColumn(name = "package_id")},
+			inverseJoinColumns = {@JoinColumn(name = "container_id")})
+	private Set<Container> containers = new HashSet<Container>();
+	
+	/*@ManyToMany
+	@JoinTable(
+			name = "packages_in_container",
+			joinColumns = {@JoinColumn(name = "box_id")},
+			inverseJoinColumns = {@JoinColumn(name = "package_id")})
+	private Set<Box> boxes = new HashSet<Box>();*/
 	
 	private int width;
 	
@@ -272,6 +312,58 @@ public class Package {
 	public void setShippingTime(Time shippingTime) {
 		this.shippingTime = shippingTime;
 	}
+
+
+
+	public Courier getCourier() {
+		return courier;
+	}
+
+
+
+	public void setCourier(Courier courier) {
+		this.courier = courier;
+	}
+
+
+
+	public Set<Container> getContainers() {
+		return containers;
+	}
+
+
+
+	public void setContainers(Set<Container> containers) {
+		this.containers = containers;
+	}
+
+
+
+	public Box getBox() {
+		return box;
+	}
+
+
+
+	public void setBox(Box box) {
+		this.box = box;
+	}
+
+
+
+	/*public Set<Box> getBoxes() {
+		return boxes;
+	}
+
+
+
+	public void setBoxes(Set<Box> boxes) {
+		this.boxes = boxes;
+	}*/
+	
+	
+	
+	
 	
 	
 	

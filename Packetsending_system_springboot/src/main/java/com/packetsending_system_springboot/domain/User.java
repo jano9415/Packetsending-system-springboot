@@ -2,6 +2,7 @@ package com.packetsending_system_springboot.domain;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,6 +17,7 @@ public class User {
 	@GeneratedValue
 	private Long id;
 	
+	@Column(unique = true)
 	private String emailAddress;
 	
 	private String password;
@@ -131,6 +133,8 @@ public class User {
 	public void setPackages(Set<Package> packages) {
 		this.packages = packages;
 	}
+	
+	
 	
 	
 	

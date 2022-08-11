@@ -16,7 +16,60 @@
 	  		<a href="/containeremptying">Automata kiürítése</a>
 		</div>
 		<div>
-			<p>Automata kiürítése</p>
+			<h1>Csomagok az automatában</h1>
+			<table>
+					<tr>
+					<td>Id</td>
+					<td>Csomagazonosító</td>
+					<td>Feladó</td>
+					<td>Feladási város</td>
+					<td>Érkezési város</td>
+					<td>Rekesz száma</td>
+					<td>Szélesség</td>
+					<td>Magasság</td>
+					<td>Hosszúság</td>
+					<td>Ár</td>
+					<td>Feladó keresztneve</td>
+					<td>Feladó vezetékneve</td>
+					<td>Feladó email címe</td>
+					<td>Csomag elszállítva</td>
+					<td>Csomag átvéve</td>
+					<td>Feladási dátum</td>
+					<td>Feladási idő</td>
+					<td>Átvételi dátum</td>
+					<td>Átvételi idő</td>
+					<td>Szállítási dátum</td>
+					<td>Szállítási idő</td>
+				</tr>
+				<tr th:each = "package : ${packages}">
+					<td th:text="${package.id}"></td>
+					<td th:text="${package.uniquePackageId}"></td>
+					<td th:text="${package.user.emailAddress}"></td>
+					<td th:text="${package.shippingFrom.city}"></td>
+					<td th:text="${package.shippingTo.city}"></td>
+					<td th:text="${package.box.id}"></td>
+					<td th:text="${package.width}"></td>
+					<td th:text="${package.height}"></td>
+					<td th:text="${package.length}"></td>
+					<td th:text="${package.price}"></td>
+					<td th:text="${package.receiverFirstName}"></td>
+					<td th:text="${package.receiverLastName}"></td>
+					<td th:text="${package.receiverEmailAddress}"></td>
+					<td th:text="${package.packageIsShipped}"></td>
+					<td th:text="${package.packageIsTaken}"></td>
+					<td th:text="${package.sendingDate}"></td>
+					<td th:text="${package.sendingTime}"></td>
+					<td th:text="${package.takingDate}"></td>
+					<td th:text="${package.takingTime}"></td>
+					<td th:text="${package.shippingDate}"></td>
+					<td th:text="${package.shippingTime}"></td>
+				</tr>
+			</table>
+			<div class="containerEmptyingFromDiv">
+				<form class="containerEmptyingForm" th:action="@{containeremptyingform}" method="POST">
+					<button>Automata kiürítése</button>
+				</form>
+			</div>
 		</div>
 
 	</body>

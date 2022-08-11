@@ -1,8 +1,12 @@
 package com.packetsending_system_springboot.domain;
 
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Courier {
@@ -14,6 +18,11 @@ public class Courier {
 	private String uniqueCourierId;
 	
 	private String password;
+	
+	//packages_during_shipping kapcsolótábla
+	//a Package osztály a birtokos
+	@OneToMany(mappedBy = "courier")
+	private Set<Package> packages;
 	
 	public Courier() {
 		
@@ -44,6 +53,16 @@ public class Courier {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public Set<Package> getPackages() {
+		return packages;
+	}
+
+	public void setPackages(Set<Package> packages) {
+		this.packages = packages;
+	}
+	
+	
 	
 	
 	

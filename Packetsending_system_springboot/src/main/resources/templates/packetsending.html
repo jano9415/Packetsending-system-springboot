@@ -22,26 +22,28 @@
 				</tr>
 			</table>
 			<div class="packetSendingFormDiv">
-				<form class="packetSendingForm">
+				<form class="packetSendingForm" th:action="@{/packetsendingform}" th:object="${package}" method="POST">
 					<label>A csomag szélessége</label>
-						<input type="number"/>
+						<input type="number" id="width" name="width" th:field="*{width}" min="1" max="145"/>
 					<label>A csomag magassága</label>
-						<input type="number"/>
+						<input type="number" id="height" name="height" th:field="*{height}" min="1" max="145"/>
 					<label>A csomag hossza</label>
-						<input type="number"/>
+						<input type="number" id="length" name="length" th:field="*{length}" min="1" max="145"/>
 					<label>Átvevő vezeték neve</label>
-						<input type="text"/>
+						<input type="text" id="receiverLastName" name="receiverLastName" th:field="*{receiverLastName}"/>
 					<label>Átvevő kereszt neve</label>
-						<input type="text"/>
+						<input type="text" id="receiverFirstName" name="receiverFirstName" th:field="*{receiverFirstName}"/>
 					<label>Átvevő email címe</label>
-						<input type="text"/>
+						<input type="text" id="receiverEmailAddress" name="receiverEmailAddress" th:field="*{receiverEmailAddress}"/>
 					<label>A csomag ára</label>
-						<input type="number"/>
+						<input type="number" id="price" name="price" th:field="*{price}" min="0"/>
 					<label>Válassz automatát, ahová küldeni szeretnéd a csomagot.</label>
-						<select>
-							<option>Veszprém</option>
-							<option>Székesfehérvár</option>
-							<option>Tapolca</option>
+						<select th:name="selectedShippingToCity">
+							<option value="Székesfehérvár">Székesfehérvár</option>
+							<option value="Tapolca">Tapolca</option>
+							<option value="Szeghalom">Szeghalom</option>
+							<option value="Csopak">Csopak</option>
+							<option value="Kőszeg">Kőszeg</option>
 						</select>
 					<button type="submit">Küldés</button>
 				</form>
