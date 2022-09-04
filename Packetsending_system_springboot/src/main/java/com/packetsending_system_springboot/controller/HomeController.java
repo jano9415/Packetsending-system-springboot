@@ -2,20 +2,35 @@ package com.packetsending_system_springboot.controller;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.Principal;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.catalina.authenticator.SpnegoAuthenticator.AuthenticateAction;
+import org.apache.logging.log4j.message.Message;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
+import com.packetsending_system_springboot.config.SecurityConfig;
 import com.packetsending_system_springboot.domain.Box;
 import com.packetsending_system_springboot.domain.Container;
 import com.packetsending_system_springboot.domain.Package;
@@ -23,9 +38,14 @@ import com.packetsending_system_springboot.domain.User;
 import com.packetsending_system_springboot.service.BoxService;
 import com.packetsending_system_springboot.service.ContainerService;
 import com.packetsending_system_springboot.service.CourierService;
+import com.packetsending_system_springboot.service.CourierServiceImpl;
 import com.packetsending_system_springboot.service.PackageService;
+import com.packetsending_system_springboot.service.RoleService;
+import com.packetsending_system_springboot.service.UserDetailsImpl;
 import com.packetsending_system_springboot.service.UserService;
+import com.packetsending_system_springboot.service.UserServiceImpl;
 import com.zaxxer.hikari.util.ClockSource.MillisecondClockSource;
+
 
 @Controller
 public class HomeController {
@@ -35,9 +55,10 @@ public class HomeController {
 	private ContainerService containerService;
 	private BoxService boxService;
 	private CourierService courierService;
-	private long actualContainerId = 5;
+	private RoleService roleService;
+	private long actualContainerId = 2;
 	
-	
+		
 	@Autowired
 	public void setUserService(UserService userService) {
 		this.userService = userService;
@@ -62,10 +83,23 @@ public class HomeController {
 	public void setCourierService(CourierService courierService) {
 		this.courierService = courierService;
 	}
+	
+	@Autowired
+	public void setRoleService(RoleService roleService) {
+		this.roleService = roleService;
+	}
+	
+	@Autowired 
+	private HttpServletRequest request;
+	
+	
 
 	//Főoldal megjelenítése
-	@RequestMapping("/index")
-	public String index() {
+	@RequestMapping("/")
+	public String index(Model model) {
+		model.addAttribute("actualContainer", containerService.findById(actualContainerId).getPostCode() + " " + containerService.findById(actualContainerId).getCity()
+				+ " " + containerService.findById(actualContainerId).getAddress());
+		System.out.println(request.getRemoteAddr() + "	" + request.getRemoteUser() + "	 " + request.getRemotePort() + "	" + request.getRemoteHost());
 		return "index";
 	}
 	
@@ -87,70 +121,136 @@ public class HomeController {
 	//Üres package objektum küldése a packetsending form-nak.
 	@RequestMapping("/packetsending")
 	public String packetSending(Model model) {
+		if(containerService.findById(actualContainerId).getPackages().size() == 9) {
+			//model.addAttribute("actualContainerFull", "Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.");
+			model.addAttribute("actualContainerFull", "	<div class=\"warning-msg\" >\r\n"
+					+ "					<span>&#9888;</span><span>Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.</span>\r\n"
+					+ "				</div>");
+		}
 		model.addAttribute("package", new Package());
 		return "packetsending";
 	}
 	
 	//Csomagátvevő oldal megjelenítése
 	@RequestMapping("/packettaking")
-	public String packetTaking() {
+	public String packetTaking() {	
 		return "packettaking";
 	}
 	
 	//Automata feltöltése oldal megjelenítése.
 	//A futárnál lévő csomagok megjelenítése.
 	@RequestMapping("/containerfilling")
-	public String containerfilling(Model model)
+	public String containerfilling(Model model, Principal principal)
 	{
-		model.addAttribute("packages",courierService.findById(1).getPackages());
+		int packagesNumberOfCourier = 0;
+		
+		//model.addAttribute("packages", courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages());
+		model.addAttribute("packages", courierService.findByUniqueCourierId(principal.getName()).getPackages());
+		
+		/*for(Package actualPackage : courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages()) {
+			if(actualPackage.getShippingTo().getId() == actualContainerId) {
+				packagesNumberOfCourier++;
+			}
+		}*/
+		
+		for(Package actualPackage : courierService.findByUniqueCourierId(principal.getName()).getPackages()) {
+			if(actualPackage.getShippingTo().getId() == actualContainerId) {
+				packagesNumberOfCourier++;
+			}
+		}
+		model.addAttribute("packagesOfCourier", packagesNumberOfCourier + ". csomagod van ehhez az automatához.");
 		return "containerfilling";
 	}
 	
 	//Automata kiürítése oldal megjelenítése.
-	//Elszállítandó csomagok megjelenítése.
+	//Minden csomag megjelenítése, ami az automatában van.
 	@RequestMapping("/containeremptying")
 	public String containeremptying(Model model)
 	{
+		int packagesWaitingShippingNumber = 0;
+		
 		model.addAttribute("packages", containerService.findById(actualContainerId).getPackages());
+		for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
+			if(actualPackage.isPackageIsShipped() == false) {
+				packagesWaitingShippingNumber++;
+			}
+		}
+		model.addAttribute("packagesWaitingShipping", "Az elszállításra váró csomagok száma: " + packagesWaitingShippingNumber + " db.");
 		return "containeremptying";
 	}
 	
-	//Regisztráció. Felhasználó mentése a user táblába.
+	//Regisztráció.
+	//Minden mező kitöltése kötelező.
+	//Email cím és jelszó ellenőrzése.
+	//Felhasználó mentése a user táblába.
 	@PostMapping("/signupform")
-	public String signupForm(@ModelAttribute User filledUser) {
+	public String signupForm(@ModelAttribute User filledUser, Model model) {
+		int errorNumber = 0;
+		
+		
 		if(userService.findByEmailAddress(filledUser.getEmailAddress()) != null) {
-			System.out.println("Ilyen email cím már létezik.");
+			errorNumber++;
+			//model.addAttribute("emailAlredyExist", "A megadott email címmel már regisztráltak.");
+			  model.addAttribute("emailAlredyExist", "				<div class=\"warning-msg\">\r\n"
+			  		+ "					<span>&#9888;</span><span>A megadott email címmel már regisztráltak.</span>\r\n"
+			  		+ "				</div>");
 		}
-		else {
+		
+		if(passwordValidation(filledUser.getPassword()) == false) {
+			/*model.addAttribute("passwordIsWeak", "Jelszó túl gyenge. Minimum 8 maximum 20 karakter."
+					+ "Tartalmaznia kell legalább egy számot, legalább egy kisbetűt, legalább egy nagybetűt és legalább egy "
+					+ "speciális karaktert az alábbiak közül: @#$%^&-+=()"
+					+ "Nem tartalmazhat szóközt.");*/
+			model.addAttribute("passwordIsWeak", "				<div class=\"warning-msg\">\r\n"
+					+ "					<span>&#9888;</span><span>Jelszó túl gyenge. Minimum 8 maximum 20 karakter.\r\n"
+					+ "					 Tartalmaznia kell legalább egy számot, legalább egy kisbetűt, legalább egy nagybetűt és legalább egy \r\n"
+					+ "					 speciális karaktert az alábbiak közül: @#$%^&-+=()\r\n"
+					+ "					 Nem tartalmazhat szóközt.</span>\r\n"
+					+ "				</div>");
+			errorNumber++;
+		}
+		
+		if(errorNumber == 0) {
+			filledUser.setRole(roleService.findByRoleName("user"));
 			userService.saveUser(filledUser);
 		}
+		
+
 		return "signup";
 	}
 	
 	//Csomagküldés. Csomag mentése a package táblába.
 	@PostMapping("/packetsendingform")
-	public String packetSendingForm(@ModelAttribute Package filledPackage, @RequestParam String selectedShippingToCity ) {
+	public String packetSendingForm(@ModelAttribute Package filledPackage, @RequestParam String selectedShippingToCity, Model model, Principal principal ) {
 		
 		int shippingIsNotPossibleCount = 0;
 		Box freeBoxInActualContainer = checkActualContainerFull(filledPackage);
 		Box freeBoxInSelectedContainer = checkSelectedContainerFull(selectedShippingToCity, filledPackage);
 		
 		if(freeBoxInActualContainer == null) {
-			System.out.println("Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.");
+			//model.addAttribute("actualContainerFull", "Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.");
+			model.addAttribute("actualContainerFull", "	<div class=\"warning-msg\" >\r\n"
+					+ "					<span>&#9888;</span><span>Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.</span>\r\n"
+					+ "				</div>");
 			shippingIsNotPossibleCount++;
 		}
 		
 		if(freeBoxInSelectedContainer == null) {
-			System.out.println("Sajnáljuk, a kiválasztott automata tele van. Nem tudsz csomagot feladni.");
+			//model.addAttribute("selectedContainerFull", "Sajnáljuk, a kiválasztott automata tele van. Nem tudsz csomagot feladni.");
+			model.addAttribute("selectedContainerFull", "	<div class=\"warning-msg\" >\r\n"
+					+ "					<span>&#9888;</span><span>Sajnáljuk, a kiválasztott automata tele van. Nem tudsz csomagot feladni.</span>\r\n"
+					+ "				</div>");
 			shippingIsNotPossibleCount++;
 		}
 		
 		if(shippingIsNotPossibleCount == 0) {
-			//Csomag objektum feltöltése értékekkel
+
+			//Csomag objektum feltöltése
 			filledPackage.setUniquePackageId(generateRandomString());
 			filledPackage.setShippingFrom(containerService.findById(actualContainerId));
 			filledPackage.setShippingTo(containerService.findByCity(selectedShippingToCity));
-			filledPackage.setUser(userService.findById(90));
+			//filledPackage.setUser(userService.findById(UserServiceImpl.actualLoggedInUser.getId()));
+			filledPackage.setUser(userService.findByEmailAddress(principal.getName()));
 			filledPackage.setPackageIsShipped(false);
 			filledPackage.setPackageIsTaken(false);
 			filledPackage.setBox(freeBoxInActualContainer);
@@ -169,11 +269,13 @@ public class HomeController {
 			sendPackageNotice(filledPackage);
 			
 			System.out.println("Tedd be a csomagodat a(z) " + filledPackage.getBox().getId() + ". rekeszbe.");
+			//model.addAttribute("boxNumber", "Tedd be a csomagodat a(z) " + filledPackage.getBox().getId() + ". rekeszbe.");
+			model.addAttribute("boxNumber", "	<div class=\"info-msg\" >\r\n"
+					+ "					<span>&#8505;</span><span> Tedd be a csomagodat a(z) " + filledPackage.getBox().getId() + ". rekeszbe.</span>\r\n"
+					+ "				</div>");
+
 		}
-
-
 		
-
 		return "packetsending";
 	}
 	
@@ -202,6 +304,10 @@ public class HomeController {
 	    }
 
 	    String randomString = sb.toString();
+	    
+	    if(packageService.findByUniquePackageId(randomString) != null) {
+	    	generateRandomString();
+	    }
 	    return randomString;
 	}
 
@@ -237,7 +343,6 @@ public class HomeController {
 		for(Box box : boxService.findAll()) {
 			if(filledPackage.getWidth() < box.getMaxWidth() && filledPackage.getHeight() < box.getMaxHeight() && filledPackage.getLength() < box.getMaxLength()) {
 				if(boxesFull.contains(box) == false) {
-					System.out.println("A kiválasztott automatában van szabad hely.");
 					return box;
 				}
 			}
@@ -248,17 +353,23 @@ public class HomeController {
 	//Az aktuális automata kiürítése. A szállítandó csomagok átkerülnek a futárhoz.
 	//Csomag és futár kapcsolat létrehozása a packages_during_shipping táblában.
 	@PostMapping("/containeremptyingform")
-	public String containerEmptyingForm() {
+	public String containerEmptyingForm(Model model, Principal principal) {
+		String message = "";
 		for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
 			if(actualPackage.getShippingFrom().getId() == actualContainerId) {
+				
+				message += "Vedd ki a(z) " + actualPackage.getUniquePackageId() + " számú csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszből.\n";
+				
 				actualPackage.setContainers(null);
 				actualPackage.setBox(null);
-				actualPackage.setCourier(courierService.findById(1));
-				courierService.findById(1).getPackages().add(actualPackage);
+				//actualPackage.setCourier(courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()));
+				actualPackage.setCourier(courierService.findByUniqueCourierId(principal.getName()));
+				//courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages().add(actualPackage);
+				courierService.findByUniqueCourierId(principal.getName()).getPackages().add(actualPackage);
 				packageService.savePackage(actualPackage);
 			}
-
 		}
+		model.addAttribute("packagesFromContainerMessage", message);
 		return "containeremptying";
 	}
 
@@ -284,8 +395,11 @@ public class HomeController {
 	//a csomagok számára, akkor bekerülnek az automatába.
 	//packages_during_shipping és packages_in_container táblák frissítése
 	@PostMapping("/containerfillingform")
-	public String containerFillingForm() {
-		for(Package actualPackage : courierService.findById(1).getPackages()) {
+	public String containerFillingForm(Model model, Principal principal) {
+		String message = "";
+		
+		//for(Package actualPackage : courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages()) {
+			for(Package actualPackage : courierService.findByUniqueCourierId(principal.getName()).getPackages()) {
 			if(actualContainerId == actualPackage.getShippingTo().getId() && checkActualContainerFull(actualPackage) != null) {
 				actualPackage.setCourier(null);
 				actualPackage.setBox(checkActualContainerFull(actualPackage));
@@ -300,9 +414,12 @@ public class HomeController {
 				packageService.savePackage(actualPackage);
 				
 				packageIsShippedNotice(actualPackage);
+				
+				message += "Tedd be a(z) " + actualPackage.getUniquePackageId() + " számú csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszbe.\n";
 
 			}
 		}
+		model.addAttribute("packagesToContainerMessage", message);
 		return "containerfilling";
 	}
 
@@ -321,6 +438,69 @@ public class HomeController {
 			e.printStackTrace();
 		}
 	}
+
+	//Csomagátvétel. Egyedi csomag azonosító bekérése. Csomag keresése az adatbázisban.
+	//packages_in_container tábla frissítése
+	//Értesítés küldése a sikeres átvételről.
+	@PostMapping("/packettakingform")
+	public String packetTakingForm(@RequestParam String uniquePackageId, Model model) {
+		Package actualPackage = packageService.findByUniquePackageId(uniquePackageId);
+		
+		if(actualPackage != null && actualPackage.isPackageIsShipped() && actualPackage.getShippingTo().getId() == actualContainerId && actualPackage.isPackageIsTaken() == false) {
+			//model.addAttribute("packageTakingMessage", "Vedd ki a csomagot a " + actualPackage.getBox().getId() + ". rekeszből.");
+			model.addAttribute("packageTakingMessage", "<div class=\"info-msg\" >\r\n"
+					+ "					<span>&#8505;</span><span> Vedd ki a csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszből.</span>\r\n"
+					+ "				</div>"); 
+			actualPackage.setPackageIsTaken(true);
+			
+			long millis = System.currentTimeMillis();
+			actualPackage.setTakingDate(new Date(millis));
+			actualPackage.setTakingTime(new Time(millis));
+			actualPackage.setBox(null);
+			
+			actualPackage.setContainers(null);
+			packageService.savePackage(actualPackage);
+			
+			packageIsTakenNotice();
+			
+		}
+		else{
+			//model.addAttribute("packageTakingMessage", "Csomag nem található. Add meg az azonosítót újra.");
+			model.addAttribute("packageTakingMessage", "<div class=\"error-msg\" >\r\n"
+					+ "					<span>&#9746;</span><span> Csomag nem található. Add meg az azonosítót újra.</span>\r\n"
+					+ "				</div>"); 
+		}
+		return "packettaking";
+	}
+
+	//Értesítés a sikeres átvételről. Email küldése a csomag átvevőjének.
+	public void packageIsTakenNotice() {
+		
+	}
+
+	//Megadott jelszó ellenőrzése.
+	public boolean passwordValidation(String password) {
+		//^ represents starting character of the string.
+		//(?=.*[0-9]) represents a digit must occur at least once.
+		//(?=.*[a-z]) represents a lower case alphabet must occur at least once.
+		//(?=.*[A-Z]) represents an upper case alphabet that must occur at least once.
+		//(?=.*[@#$%^&-+=()] represents a special character that must occur at least once.
+		//(?=\\S+$) white spaces don’t allowed in the entire string.
+		//.{8, 20} represents at least 8 characters and at most 20 characters.
+		//$ represents the end of the string.
+		
+        String regex = "^(?=.*[0-9])"
+                       + "(?=.*[a-z])(?=.*[A-Z])"
+                       + "(?=.*[@#$%^&+=])"
+                       + "(?=\\S+$).{8,20}$";
+  
+        Pattern p = Pattern.compile(regex);
+  
+        Matcher m = p.matcher(password);
+  
+        return m.matches();
+	}
+	
 }
 
 

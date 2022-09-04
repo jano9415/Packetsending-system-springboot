@@ -3,7 +3,7 @@
 	<head>
 	</head>
 		<link type="text/css" href="css/style.css" th:href="@{/css/style.css}"  rel="stylesheet"/>
-		<title>Csomagátvétel</title>
+		<title>Bejelentkezés</title>
 	
 	<body>
 		<div class="icon-bar">
@@ -12,7 +12,7 @@
 	  		<a href="/signup" sec:authorize="!isAuthenticated()">Regisztráció</a>
 	  		<a href="/packetsending" sec:authorize="!hasAuthority('courier')">Csomag feladás</a>
 	  		<a href="/packettaking" sec:authorize="!hasAuthority('courier')">Csomag átvétel</a>
-		  	<a href="/containerfilling" sec:authorize="hasAuthority('courier')">Automata feltöltése</a>
+	  		<a href="/containerfilling" sec:authorize="hasAuthority('courier')">Automata feltöltése</a>
 	  		<a href="/containeremptying" sec:authorize="hasAuthority('courier')">Automata kiürítése</a>
 	  		<form th:action="@{/logout}" method="POST" id="frmlogout" sec:authorize="isAuthenticated()">
 				<a href="javascript:{}" onclick="document.getElementById('frmlogout').submit(); return false;">Kijelentkezés</a>
@@ -20,18 +20,33 @@
 		</div>
 		<div class="contentDiv">
 			<div class="formDiv">
-				<form class="packetTakingForm" th:action="@{packettakingform}" method="POST">
+				<form class="loginForm" th:action="@{/login}" name="login" method="POST">
+				
 					<div class="group">
-						<input type="text" th:name="uniquePackageId"/>
+						<input  type="text" id="username" name="username"/>
 						<span class="highlight"></span>
       					<span class="bar"></span>
-      					<label>Csomagazonosító</label>
+      					<label>Felhasználói név</label>
 					</div>
-					<button type="submit">Küldés</button>
-				</form>
-				<p th:utext="${packageTakingMessage}"></p>
-			</div>
+					
+					<div class="group">
+						<input type="password" id="password" name="password"/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Jelszó</label>
+					</div>
+				
+				<div class="success-msg" th:if="${param.logout}">
+				  <span>&#10003;</span><span>Sikeresen kijelentkeztél<span>
+				</div>
 
+				<div class="error-msg" th:if="${param.error}">
+					<span>&#9746;</span><span>Hibás felhasználói név vagy jelszó</span>
+				</div>
+				
+					<button type="submit">Bejelentkezés</button>
+				</form>
+			</div>
 		</div>
 
 	</body>

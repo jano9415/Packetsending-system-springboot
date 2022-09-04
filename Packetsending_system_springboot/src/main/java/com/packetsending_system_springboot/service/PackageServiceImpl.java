@@ -38,6 +38,18 @@ public class PackageServiceImpl implements PackageService {
 		return packageRepository.findAllByShippingFromAndPackageIsShipped(shippingFrom, packageIsShipped);
 	}
 
+	//Csomag keresése egyedi csomagazonosító szerint
+	@Override
+	public Package findByUniquePackageId(String uniquePackageId) {
+		return packageRepository.findByUniquePackageId(uniquePackageId);
+	}
+
+	//Csomag keresése egyedi csomagazonosító szerint
+	@Override
+	public String findByUniquePackageIdOnlyString(String uniquePackageId) {
+		return packageRepository.findByUniquePackageIdOnlyString(uniquePackageId);
+	}
+
 
 	
 	

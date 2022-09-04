@@ -7,37 +7,83 @@
 	
 	<body>
 		<div class="icon-bar">
-			<a class="active" href="/index">Főoldal</a>
-	  		<a href="/login">Bejelentkezés</a>
-	  		<a href="/signup">Regisztráció</a>
-	  		<a href="/packetsending">Csomag feladás</a>
-	  		<a href="/packettaking">Csomag átvétel</a>
-	  		<a href="/containerfilling">Automata feltöltése</a>
-	  		<a href="/containeremptying">Automata kiürítése</a>
+			<a class="active" href="/">Főoldal</a>
+	  		<a href="/login" sec:authorize="!isAuthenticated()">Bejelentkezés</a>
+	  		<a href="/signup" sec:authorize="!isAuthenticated()">Regisztráció</a>
+	  		<a href="/packetsending" sec:authorize="!hasAuthority('courier')">Csomag feladás</a>
+	  		<a href="/packettaking" sec:authorize="!hasAuthority('courier')">Csomag átvétel</a>
+	  		<a href="/containerfilling" sec:authorize="hasAuthority('courier')">Automata feltöltése</a>
+	  		<a href="/containeremptying" sec:authorize="hasAuthority('courier')">Automata kiürítése</a>
+	  		<form th:action="@{/logout}" method="POST" id="frmlogout" sec:authorize="isAuthenticated()">
+				<a href="javascript:{}" onclick="document.getElementById('frmlogout').submit(); return false;">Kijelentkezés</a>
+			</form>
 		</div>
-		<div>
-			<p>Regisztráció</p>
-			<div class="signUpFormDiv">
+		<div class="contentDiv">
+			<div class="formDiv">
 				<form class="signUpForm" th:action="@{/signupform}" th:object="${user}" method="POST">
-					<label>Email cím</label>
-						<input type="text" id="emailAddress" name="emailAddress" th:field="*{emailAddress}"/>
-					<label>Jelszó</label>
-						<input type="password" id="password" name="password" th:field="*{password}"/>
-					<label>Vezetéknév</label>
-						<input type="text" id="lastName" name="lastName" th:field="*{lastName}"/>
-					<label>Keresztnév</label>
-						<input type="text" id="firstName" name="firstName" th:field="*{firstName}"/>
-					<label>Irányítószám</label>
-						<input type="number" id="postcode" name="postcode" th:field="*{postCode}"/>
-					<label>Város</label>
-						<input type="text" id="city" name="city" th:field="*{city}"/>
-					<label>Utca</label>
-						<input type="text" id="address" name="address" th:field="*{address}"/>
-					<label>Telefon szám</label>
-						<input type="text" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}"/>
+					<div class="group">
+						<input type="text" id="emailAddress" name="emailAddress" th:field="*{emailAddress}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Email cím</label>
+						<p th:utext="${emailAlredyExist}"></p>
+					</div>
+					
+					<div class="group">
+						<input type="password" id="password" name="password" th:field="*{password}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Jelszó</label>
+      					<p th:utext="${passwordIsWeak}"></p>
+					</div>
+					
+					<div class="group">
+						<input type="text" id="lastName" name="lastName" th:field="*{lastName}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Vezetéknév</label>
+					</div>
+					
+					<div class="group">
+						<input type="text" id="firstName" name="firstName" th:field="*{firstName}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Keresztnév</label>
+					</div>
+					
+					<div class="group">
+						<input type="number" id="postcode" name="postcode" th:field="*{postCode}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Irányítószám</label>
+					</div>
+					
+					<div class="group">
+						<input type="text" id="city" name="city" th:field="*{city}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Város</label>
+					</div>
+					
+					<div class="group">
+						<input type="text" id="address" name="address" th:field="*{address}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Utca</label>
+					</div>
+					
+					<div class="group">
+						<input type="text" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}" required/>
+						<span class="highlight"></span>
+      					<span class="bar"></span>
+      					<label>Telefon szám</label>
+					</div>
 					<button type="submit">Küldés</button>
+					<button type="reset">Adatok törlése</button>
 				</form>
+				<!--<span th:text="${passwordIsWeak}"></span>-->
 			</div>
+			
 		</div>
 
 	</body>

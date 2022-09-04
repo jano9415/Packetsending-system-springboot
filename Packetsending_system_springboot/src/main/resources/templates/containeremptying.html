@@ -7,69 +7,70 @@
 	
 	<body>
 		<div class="icon-bar">
-			<a class="active" href="/index">Főoldal</a>
-	  		<a href="/login">Bejelentkezés</a>
-	  		<a href="/signup">Regisztráció</a>
-	  		<a href="/packetsending">Csomagfeladás</a>
-	  		<a href="/packettaking">Csomagátvétel</a>
-	  		<a href="/containerfilling">Automata feltöltése</a>
-	  		<a href="/containeremptying">Automata kiürítése</a>
+			<a class="active" href="/">Főoldal</a>
+	  		<a href="/login" sec:authorize="!isAuthenticated()">Bejelentkezés</a>
+	  		<a href="/signup" sec:authorize="!isAuthenticated()">Regisztráció</a>
+	  		<a href="/packetsending" sec:authorize="!hasAuthority('courier')">Csomagfeladás</a>
+	  		<a href="/packettaking" sec:authorize="!hasAuthority('courier')">Csomagátvétel</a>
+	  		<a href="/containerfilling" sec:authorize="hasAuthority('courier')">Automata feltöltése</a>
+	  		<a href="/containeremptying" sec:authorize="hasAuthority('courier')">Automata kiürítése</a>
+	  		<form th:action="@{/logout}" method="POST" id="frmlogout" sec:authorize="isAuthenticated()">
+				<a href="javascript:{}" onclick="document.getElementById('frmlogout').submit(); return false;">Kijelentkezés</a>
+			</form>
 		</div>
-		<div>
+		<div class="contentDiv">
 			<h1>Csomagok az automatában</h1>
-			<table>
-					<tr>
-					<td>Id</td>
-					<td>Csomagazonosító</td>
-					<td>Feladó</td>
-					<td>Feladási város</td>
-					<td>Érkezési város</td>
-					<td>Rekesz száma</td>
-					<td>Szélesség</td>
-					<td>Magasság</td>
-					<td>Hosszúság</td>
-					<td>Ár</td>
-					<td>Feladó keresztneve</td>
-					<td>Feladó vezetékneve</td>
-					<td>Feladó email címe</td>
-					<td>Csomag elszállítva</td>
-					<td>Csomag átvéve</td>
-					<td>Feladási dátum</td>
-					<td>Feladási idő</td>
-					<td>Átvételi dátum</td>
-					<td>Átvételi idő</td>
-					<td>Szállítási dátum</td>
-					<td>Szállítási idő</td>
-				</tr>
-				<tr th:each = "package : ${packages}">
-					<td th:text="${package.id}"></td>
-					<td th:text="${package.uniquePackageId}"></td>
-					<td th:text="${package.user.emailAddress}"></td>
-					<td th:text="${package.shippingFrom.city}"></td>
-					<td th:text="${package.shippingTo.city}"></td>
-					<td th:text="${package.box.id}"></td>
-					<td th:text="${package.width}"></td>
-					<td th:text="${package.height}"></td>
-					<td th:text="${package.length}"></td>
-					<td th:text="${package.price}"></td>
-					<td th:text="${package.receiverFirstName}"></td>
-					<td th:text="${package.receiverLastName}"></td>
-					<td th:text="${package.receiverEmailAddress}"></td>
-					<td th:text="${package.packageIsShipped}"></td>
-					<td th:text="${package.packageIsTaken}"></td>
-					<td th:text="${package.sendingDate}"></td>
-					<td th:text="${package.sendingTime}"></td>
-					<td th:text="${package.takingDate}"></td>
-					<td th:text="${package.takingTime}"></td>
-					<td th:text="${package.shippingDate}"></td>
-					<td th:text="${package.shippingTime}"></td>
-				</tr>
-			</table>
+			<span th:text="${packagesWaitingShipping}"></span>
+			<div style="overflow-x:auto;">
+				<table class="styledTable">
+						<tr>
+						<td>Id</td>
+						<td>Csomagazonosító</td>
+						<td>Feladó</td>
+						<td>Feladási város</td>
+						<td>Érkezési város</td>
+						<td>Rekesz száma</td>
+						<td>Szélesség</td>
+						<td>Magasság</td>
+						<td>Hosszúság</td>
+						<td>Ár</td>
+						<td>Feladó keresztneve</td>
+						<td>Feladó vezetékneve</td>
+						<td>Feladó email címe</td>
+						<td>Csomag elszállítva</td>
+						<td>Feladási dátum</td>
+						<td>Feladási idő</td>
+						<td>Szállítási dátum</td>
+						<td>Szállítási idő</td>
+					</tr>
+					<tr class="activeRow" th:each = "package : ${packages}">
+						<td th:text="${package.id}"></td>
+						<td th:text="${package.uniquePackageId}"></td>
+						<td th:text="${package.user.emailAddress}"></td>
+						<td th:text="${package.shippingFrom.city}"></td>
+						<td th:text="${package.shippingTo.city}"></td>
+						<td th:text="${package.box.id}"></td>
+						<td th:text="${package.width}"></td>
+						<td th:text="${package.height}"></td>
+						<td th:text="${package.length}"></td>
+						<td th:text="${package.price}"></td>
+						<td th:text="${package.receiverFirstName}"></td>
+						<td th:text="${package.receiverLastName}"></td>
+						<td th:text="${package.receiverEmailAddress}"></td>
+						<td th:text="${package.packageIsShipped}"></td>
+						<td th:text="${package.sendingDate}"></td>
+						<td th:text="${package.sendingTime}"></td>
+						<td th:text="${package.shippingDate}"></td>
+						<td th:text="${package.shippingTime}"></td>
+					</tr>
+				</table>
+			</div>
 			<div class="containerEmptyingFromDiv">
 				<form class="containerEmptyingForm" th:action="@{containeremptyingform}" method="POST">
 					<button>Automata kiürítése</button>
 				</form>
 			</div>
+			<span th:text="${packagesFromContainerMessage}"></span>
 		</div>
 
 	</body>

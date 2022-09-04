@@ -15,4 +15,7 @@ public interface UserService {
 	//Keresés id alapján
 	public User findById(long id);
 	
+	//Bejelentkezett felhasználó lekérése
+	//public User getActualLoggedInUser();
+	
 }

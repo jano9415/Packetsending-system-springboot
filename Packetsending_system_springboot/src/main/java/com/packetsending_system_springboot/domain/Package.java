@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -22,6 +23,7 @@ public class Package {
 	@GeneratedValue
 	private Long id;
 	
+	@Column(unique = true, nullable = false)
 	private String uniquePackageId;
 	
 	//Kétoldali kapcsolat a Package és a User között.
@@ -67,7 +69,7 @@ public class Package {
 	
 	//packages_in_container kapcsolótábla
 	//ez az osztály a birtokos
-	@ManyToMany
+	@ManyToMany(/*fetch= FetchType.EAGER*/)
 	@JoinTable(
 			name = "packages_in_container",
 			joinColumns = {@JoinColumn(name = "package_id")},

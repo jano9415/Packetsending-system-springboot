@@ -1,11 +1,15 @@
 package com.packetsending_system_springboot.domain;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 @Entity
@@ -21,8 +25,16 @@ public class Courier {
 	
 	//packages_during_shipping kapcsolótábla
 	//a Package osztály a birtokos
-	@OneToMany(mappedBy = "courier")
-	private Set<Package> packages;
+	@OneToMany(mappedBy = "courier" /*, fetch= FetchType.EAGER*/)
+	private Set<Package> packages =  new HashSet<Package>();
+	
+	//Kétoldali kapcsolat a courier és a role között.
+	//Ez az osztály a birtokos. Ez tartalmazza az idegen kulcsot.
+	//Idegen kulcs a role tábla role_id attribútumára.
+	//Egy futárnak egy szerepköre van.
+	@ManyToOne
+	@JoinColumn(name = "role_id")
+	private Role role;
 	
 	public Courier() {
 		
@@ -61,6 +73,16 @@ public class Courier {
 	public void setPackages(Set<Package> packages) {
 		this.packages = packages;
 	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+	
+	
 	
 	
 	

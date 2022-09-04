@@ -1,3 +1,4 @@
+/*Menü stílus*/
 .icon-bar {
   width: 100%; /* Full-width */
   background-color: #555; /* Dark-grey background */
@@ -22,65 +23,251 @@
   background-color: #04AA6D; /* Add an active/current color */
 }
 
-/*Fő tartalom div*/
-.contentContainer{
 
+
+
+/*Form stílus*/
+
+* { box-sizing:border-box; }
+
+.formDiv 		{ 
+  font-family:'Roboto';
+  width:600px; 
+  margin:30px auto 0; 
+  display:block; 
+  background:#FFF;
+  padding:10px 50px 50px;
+}
+h2 		 { 
+  text-align:center; 
+  margin-bottom:50px; 
+}
+h2 small { 
+  font-weight:normal; 
+  color:#888; 
+  display:block; 
+}
+.footer 	{ text-align:center; }
+.footer a  { color:#53B2C8; }
+
+
+.group 			  { 
+  position:relative; 
+  margin-bottom:45px; 
+}
+input 				{
+  font-size:18px;
+  padding:10px 10px 10px 5px;
+  display:block;
+  width:300px;
+  border:none;
+  border-bottom:1px solid #757575;
+}
+input:focus 		{ outline:none; }
+
+label 				 {
+  color:#999; 
+  font-size:18px;
+  font-weight:normal;
+  position:absolute;
+  pointer-events:none;
+  left:5px;
+  top:10px;
+  transition:0.2s ease all; 
+  -moz-transition:0.2s ease all; 
+  -webkit-transition:0.2s ease all;
 }
 
-/*Csomagküldő form*/
-.packetSendingFormDiv{
-  position: fixed;
+
+input:focus ~ label, input:valid ~ label 		{
+  top:-20px;
+  font-size:14px;
+  color:#5264AE;
 }
 
-.packetSendingForm{
-  max-width: 170px;
+
+.bar 	{ position:relative; display:block; width:300px; }
+.bar:before, .bar:after 	{
+  content:'';
+  height:2px; 
+  width:0;
+  bottom:1px; 
+  position:absolute;
+  background:#5264AE; 
+  transition:0.2s ease all; 
+  -moz-transition:0.2s ease all; 
+  -webkit-transition:0.2s ease all;
+}
+.bar:before {
+  left:50%;
+}
+.bar:after {
+  right:50%; 
+}
+
+
+input:focus ~ .bar:before, input:focus ~ .bar:after {
+  width:50%;
+}
+
+
+.highlight {
+  position:absolute;
+  height:60%; 
+  width:100px; 
+  top:25%; 
+  left:0;
+  pointer-events:none;
+  opacity:0.5;
+}
+
+
+input:focus ~ .highlight {
+  -webkit-animation:inputHighlighter 0.3s ease;
+  -moz-animation:inputHighlighter 0.3s ease;
+  animation:inputHighlighter 0.3s ease;
+}
+
+
+@-webkit-keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
+@-moz-keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
+@keyframes inputHighlighter {
+	from { background:#5264AE; }
+  to 	{ width:0; background:transparent; }
+}
+
+/*Gomb stílus*/
+
+
+button{
+  padding: 15px 40px;
+  background: rgb(0, 128, 192);
+  border:0;
+  color: #fff;
+  text-transform: uppercase;
+  font-family: helvetica;
+  font-size: 12px;
+  letter-spacing: 3px;
+  position: relative;
+  transition:         all .4s cubic-bezier(0.645, 0.045, 0.355, 1);
+  cursor: pointer;
+  display: block;
+  margin: 100px auto;
+}
+
+button::after,
+button::before{
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translateY(-50%);
+    opacity: 0;
+  transition:         all .4s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+button::after{
+    width: 30px;
+    height: 1px;
+    background: white;
+    transform: translateX(-3px);
+    margin-top: 0px;
+}
+
+button::before{
+    content: "";
+    transform: rotate(-135deg) translateX(50%);
+    width: 11px;
+    height: 11px;
+    background: transparent;
+    border-left: 1px solid white;
+    border-bottom: 1px solid white;
+  margin-top: -1px;
+}
+
+
+button:hover{
+  padding: 15px 60px 15px 20px;
+}
+
+button:hover::after,
+button:hover::before{
+  opacity: 1;
+  right: 15px;
+}
+
+/*Táblázat stílus*/
+.styledTable {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styledTable thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styledTable th,
+.styledTable td {
+    padding: 12px 15px;
+}
+
+.styledTable tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styledTable tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styledTable tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+.styledTabletbody tr.activeRow {
+    font-weight: bold;
+    color: #009879;
+}
+
+/*Szövegdobozok*/
+
+
+.info-msg,
+.success-msg,
+.warning-msg,
+.error-msg {
+  margin: 10px 0;
   padding: 10px;
+  border-radius: 3px 3px 3px 3px;
+}
+.info-msg {
+  color: #059;
+  background-color: #BEF;
+}
+.success-msg {
+  color: #270;
+  background-color: #DFF2BF;
+}
+.warning-msg {
+  color: #9F6000;
+  background-color: #FEEFB3;
+}
+.error-msg {
+  color: #D8000C;
+  background-color: #FFBABA;
 }
 
-/*Login form*/
-.loginFormDiv{
-  display: inline-block;
-  padding: 1rem 1rem;
-  vertical-align: middle;
 
-}
 
-.loginForm{
-  max-width: 150px;
-  padding: 10px;
-}
 
-/*Futár login form*/
-.courierLoginFormDiv{
-  display: inline-block;
-  padding: 1rem 1rem;
-  vertical-align: middle;
-
-}
-
-.courierLoginForm{
-  max-width: 150px;
-  padding: 10px;
-}
-
-/*Regisztrációs form*/
-.signUpFormDiv{
-  position: fixed;
-}
-
-.signUpForm{
-  max-width: 150px;
-  padding: 10px;
-}
-
-/*Csomagátvétel form*/
-.packetTakingFormDiv{
-  position: fixed;
-}
-
-.packetTakingForm{
-  max-width: 150px;
-  padding: 10px;
-}
-
-/*Automata feltöltése form*/
