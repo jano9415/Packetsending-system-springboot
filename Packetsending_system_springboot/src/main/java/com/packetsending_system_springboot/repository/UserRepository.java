@@ -15,5 +15,8 @@ public interface UserRepository extends CrudRepository<User, Long> {
 	//Keresés emaicím alapján.
 	public User findByEmailAddress(String emailAddress);
 	
+	//Keresés aktivációs kód szerint.
+	public User findByActivationCode(String activationCode);
+	
 
 }

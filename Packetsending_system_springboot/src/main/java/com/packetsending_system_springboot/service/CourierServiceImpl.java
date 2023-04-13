@@ -13,18 +13,11 @@ import com.packetsending_system_springboot.repository.CourierRepository;
 public class CourierServiceImpl implements CourierService {
 
 	private CourierRepository courierRepository;
-	
-	//public static Courier actualLoggedInCourier;
 
 	@Autowired
 	public void setCourierRepository(CourierRepository courierRepository) {
 		this.courierRepository = courierRepository;
 	}
-	
-	//Bejelentkezett futár lekérése.
-	/*public Courier getActualLoggedInCourier() {
-		return actualLoggedInCourier;
-	}*/
 
 	//Futár keresése id alapján
 	@Override
@@ -38,15 +31,6 @@ public class CourierServiceImpl implements CourierService {
 		return courierRepository.findByUniqueCourierId(uniqueCourierId);
 	}
 
-	//Futár keresése az adatbázisban bejelentkezéskor.
-	public void loadCourierByUniqueCourierId(String uniqueCourierId) throws UsernameNotFoundException {
-		//actualLoggedInCourier = findByUniqueCourierId(uniqueCourierId);
-		Courier actualLoggedInCourier = findByUniqueCourierId(uniqueCourierId);
-		
-		if(actualLoggedInCourier == null) {
-			throw new UsernameNotFoundException(uniqueCourierId);
-		}
-	}
 
 
 

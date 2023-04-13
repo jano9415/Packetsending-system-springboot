@@ -18,7 +18,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 	private UserRepository userRepository;
 	private CourierService courierService;
-	//public static User actualLoggedInUser;
 
 	
 	@Autowired
@@ -32,13 +31,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		this.courierService = courierService;
 	}
 
-	//Bejelentkezett felhasználó lekérése
-	/*public User getActualLoggedInUser() {
-		return actualLoggedInUser;
-	}*/
 	
-
-
 	//Regisztráció. Felhasználó mentése az adatbázisba.
 	@Override
 	public void saveUser(User user) {
@@ -66,20 +59,42 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		if(username.length() == 6) {
-			//courierService.loadCourierByUniqueCourierId(username);
-			//return new UserDetailsImpl(null , CourierServiceImpl.actualLoggedInCourier);
-			courierService.loadCourierByUniqueCourierId(username);
 			return new UserDetailsImpl(null , courierService.findByUniqueCourierId(username));
 		}
 
-		//actualLoggedInUser = findByEmailAddress(username);
 		User actualLoggedInUser = findByEmailAddress(username);
+		
 		if(actualLoggedInUser == null) 
 		{
 			throw new UsernameNotFoundException(username);
 		}
 		return new UserDetailsImpl(actualLoggedInUser , null);
 	}
+
+	//Keresés aktivációs kód szerint.
+	@Override
+	public User findByActivationCode(String activationCode) {
+		return userRepository.findByActivationCode(activationCode);
+	}
+
+	//Felhasználó aktiválása.
+	@Override
+	public String userActivation(String activationCode) {
+		User actualUser = findByActivationCode(activationCode);
+		
+		if(actualUser == null) {
+			return "unsuccessactivation";
+		}
+		
+		actualUser.setActivationCode(null);
+		actualUser.setEnabled(true);
+		saveUser(actualUser);
+		return "successactivation";
+	}
+	
+	
+	
+	
 
 
 	

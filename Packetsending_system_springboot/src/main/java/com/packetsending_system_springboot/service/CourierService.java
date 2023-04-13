@@ -11,8 +11,6 @@ public interface CourierService {
 	
 	//Futár keresése egyedi azonosítója alapján
 	public Courier findByUniqueCourierId(String uniqueCourierId);
+
 	
-	public void loadCourierByUniqueCourierId(String uniqueCourierId);
-	
-	//public Courier getActualLoggedInCourier();
 }

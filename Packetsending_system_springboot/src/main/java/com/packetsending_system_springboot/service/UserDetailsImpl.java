@@ -88,7 +88,13 @@ public class UserDetailsImpl implements UserDetails {
 	//Felhasználó engedélyezve van-e
 	@Override
 	public boolean isEnabled() {
-		return true;
+		if(user != null) {
+			return user.isEnabled();
+		}
+		else {
+			return true;
+		}
+		
 	}
 
 }

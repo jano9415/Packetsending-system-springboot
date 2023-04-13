@@ -86,11 +86,7 @@
 						<br>
 						<br>
 						<select th:name="selectedShippingToCity">
-							<option value="Székesfehérvár">Székesfehérvár</option>
-							<option value="Tapolca">Tapolca</option>
-							<option value="Szeghalom">Szeghalom</option>
-							<option value="Csopak">Csopak</option>
-							<option value="Kőszeg">Kőszeg</option>
+							<option th:each="container : ${containers}" th:value="${container.city}" th:text="${container.city}"></option>
 						</select>
 					</div>
 					

@@ -36,6 +36,22 @@ public class ContainerServiceImpl implements ContainerService {
 	public Container findByCity(String city) {
 		return containerRepository.findByCity(city);
 	}
+
+	//Csomag automata keresése ip cím alapján.
+	@Override
+	public Container findByIpAddress(String ipAddress) {
+		return containerRepository.findByIpAddress(ipAddress);
+	}
+
+	//Összes csomag automata lekérése, kivéve az amelyik id-je megegyezik a paraméterben kapott id-vel.
+	@Override
+	public List<Container> findByIdNot(Long id) {
+		return containerRepository.findByIdNot(id);
+	}
+	
+	
+	
+	
 	
 	
 	

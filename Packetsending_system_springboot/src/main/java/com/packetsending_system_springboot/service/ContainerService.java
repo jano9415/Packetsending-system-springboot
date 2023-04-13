@@ -15,5 +15,11 @@ public interface ContainerService {
 	
 	//Csomag automata keresése város alapján
 	public Container findByCity(String city);
+	
+	//Csomag automata keresése ip cím alapján.
+	public Container findByIpAddress(String ipAddress);
+	
+	//Összes csomag automata lekérése, kivéve az amelyik id-je megegyezik a paraméterben kapott id-vel.
+	public List<Container> findByIdNot(Long id);
 
 }

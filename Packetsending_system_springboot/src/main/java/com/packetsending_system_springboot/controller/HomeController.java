@@ -15,6 +15,10 @@ import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -22,13 +26,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.packetsending_system_springboot.config.SecurityConfig;
 import com.packetsending_system_springboot.domain.Box;
@@ -46,7 +53,6 @@ import com.packetsending_system_springboot.service.UserService;
 import com.packetsending_system_springboot.service.UserServiceImpl;
 import com.zaxxer.hikari.util.ClockSource.MillisecondClockSource;
 
-
 @Controller
 public class HomeController {
 	
@@ -56,9 +62,9 @@ public class HomeController {
 	private BoxService boxService;
 	private CourierService courierService;
 	private RoleService roleService;
-	private long actualContainerId = 2;
 	
-		
+	//private long actualContainerId = 2;
+
 	@Autowired
 	public void setUserService(UserService userService) {
 		this.userService = userService;
@@ -92,14 +98,23 @@ public class HomeController {
 	@Autowired 
 	private HttpServletRequest request;
 	
+	@Autowired
+	private JavaMailSender javaMailSender;
+	
+	
 	
 
 	//Főoldal megjelenítése
 	@RequestMapping("/")
 	public String index(Model model) {
-		model.addAttribute("actualContainer", containerService.findById(actualContainerId).getPostCode() + " " + containerService.findById(actualContainerId).getCity()
-				+ " " + containerService.findById(actualContainerId).getAddress());
-		System.out.println(request.getRemoteAddr() + "	" + request.getRemoteUser() + "	 " + request.getRemotePort() + "	" + request.getRemoteHost());
+		//model.addAttribute("actualContainer", containerService.findById(actualContainerId).getPostCode() + " " + containerService.findById(actualContainerId).getCity()
+			//	+ " " + containerService.findById(actualContainerId).getAddress());
+		model.addAttribute("actualContainer", containerService.findByIpAddress(request.getRemoteAddr()).getPostCode() + " " + containerService.findByIpAddress(request.getRemoteAddr()).getCity()
+				+ " " + containerService.findByIpAddress(request.getRemoteAddr()).getAddress());
+		
+		System.out.println("Az automata ip címe: " + request.getRemoteAddr());
+		System.out.println("Az automata címe: " + containerService.findByIpAddress(request.getRemoteAddr()).getPostCode() + " " 
+				+ containerService.findByIpAddress(request.getRemoteAddr()).getCity() + " " + containerService.findByIpAddress(request.getRemoteAddr()).getAddress());
 		return "index";
 	}
 	
@@ -121,13 +136,15 @@ public class HomeController {
 	//Üres package objektum küldése a packetsending form-nak.
 	@RequestMapping("/packetsending")
 	public String packetSending(Model model) {
-		if(containerService.findById(actualContainerId).getPackages().size() == 9) {
+		//if(containerService.findById(actualContainerId).getPackages().size() == 9) {
+		if(containerService.findByIpAddress(request.getRemoteAddr()).getPackages().size() == 9) { 
 			//model.addAttribute("actualContainerFull", "Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.");
 			model.addAttribute("actualContainerFull", "	<div class=\"warning-msg\" >\r\n"
 					+ "					<span>&#9888;</span><span>Sajnáljuk, ez az automata tele van. Nem tudsz csomagot feladni.</span>\r\n"
 					+ "				</div>");
 		}
 		model.addAttribute("package", new Package());
+		model.addAttribute("containers", containerService.findByIdNot(containerService.findByIpAddress(request.getRemoteAddr()).getId()));
 		return "packetsending";
 	}
 	
@@ -144,17 +161,11 @@ public class HomeController {
 	{
 		int packagesNumberOfCourier = 0;
 		
-		//model.addAttribute("packages", courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages());
 		model.addAttribute("packages", courierService.findByUniqueCourierId(principal.getName()).getPackages());
 		
-		/*for(Package actualPackage : courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages()) {
-			if(actualPackage.getShippingTo().getId() == actualContainerId) {
-				packagesNumberOfCourier++;
-			}
-		}*/
-		
 		for(Package actualPackage : courierService.findByUniqueCourierId(principal.getName()).getPackages()) {
-			if(actualPackage.getShippingTo().getId() == actualContainerId) {
+			//if(actualPackage.getShippingTo().getId() == actualContainerId) {
+			if(actualPackage.getShippingTo().getId() ==  containerService.findByIpAddress(request.getRemoteAddr()).getId()) {
 				packagesNumberOfCourier++;
 			}
 		}
@@ -169,8 +180,10 @@ public class HomeController {
 	{
 		int packagesWaitingShippingNumber = 0;
 		
-		model.addAttribute("packages", containerService.findById(actualContainerId).getPackages());
-		for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
+		//model.addAttribute("packages", containerService.findById(actualContainerId).getPackages());
+		model.addAttribute("packages", containerService.findByIpAddress(request.getRemoteAddr()).getPackages()); 
+		//for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
+		for(Package actualPackage : containerService.findByIpAddress(request.getRemoteAddr()).getPackages()) { 
 			if(actualPackage.isPackageIsShipped() == false) {
 				packagesWaitingShippingNumber++;
 			}
@@ -182,6 +195,7 @@ public class HomeController {
 	//Regisztráció.
 	//Minden mező kitöltése kötelező.
 	//Email cím és jelszó ellenőrzése.
+	//Aktivációs kód generálása.
 	//Felhasználó mentése a user táblába.
 	@PostMapping("/signupform")
 	public String signupForm(@ModelAttribute User filledUser, Model model) {
@@ -212,7 +226,11 @@ public class HomeController {
 		
 		if(errorNumber == 0) {
 			filledUser.setRole(roleService.findByRoleName("user"));
+			filledUser.setEnabled(false);
+			filledUser.setActivationCode(generateRandomStringForActivationCode());
 			userService.saveUser(filledUser);
+			
+			accountActivationEmailNotice(filledUser);
 		}
 		
 
@@ -246,10 +264,10 @@ public class HomeController {
 		if(shippingIsNotPossibleCount == 0) {
 
 			//Csomag objektum feltöltése
-			filledPackage.setUniquePackageId(generateRandomString());
-			filledPackage.setShippingFrom(containerService.findById(actualContainerId));
+			filledPackage.setUniquePackageId(generateRandomStringForUniqueCourierId());
+			//filledPackage.setShippingFrom(containerService.findById(actualContainerId));
+			filledPackage.setShippingFrom(containerService.findByIpAddress(request.getRemoteAddr())); 
 			filledPackage.setShippingTo(containerService.findByCity(selectedShippingToCity));
-			//filledPackage.setUser(userService.findById(UserServiceImpl.actualLoggedInUser.getId()));
 			filledPackage.setUser(userService.findByEmailAddress(principal.getName()));
 			filledPackage.setPackageIsShipped(false);
 			filledPackage.setPackageIsTaken(false);
@@ -261,12 +279,20 @@ public class HomeController {
 			filledPackage.setSendingTime(new Time(millis));
 			
 			//Csomag és automata kapcsolat létrehozása a packages_in_container táblába
-			filledPackage.getContainers().add(containerService.findById(actualContainerId));
-			containerService.findById(actualContainerId).getPackages().add(filledPackage);
+			//filledPackage.getContainers().add(containerService.findById(actualContainerId));
+			
+			//filledPackage.getContainers().add(containerService.findByIpAddress(request.getRemoteAddr()));
+			
+			filledPackage.setContainer(containerService.findByIpAddress(request.getRemoteAddr()));
+			
+			//containerService.findById(actualContainerId).getPackages().add(filledPackage);
+			
+			containerService.findByIpAddress(request.getRemoteAddr()).getPackages().add(filledPackage); 
 			
 			packageService.savePackage(filledPackage);
 			
-			sendPackageNotice(filledPackage);
+			sendPackageTextNotice(filledPackage);
+			sendPackageEmailNotice(filledPackage);
 			
 			System.out.println("Tedd be a csomagodat a(z) " + filledPackage.getBox().getId() + ". rekeszbe.");
 			//model.addAttribute("boxNumber", "Tedd be a csomagodat a(z) " + filledPackage.getBox().getId() + ". rekeszbe.");
@@ -279,8 +305,8 @@ public class HomeController {
 		return "packetsending";
 	}
 	
-	//Random string generálása.
-	public String generateRandomString() {
+	//Random string generálása az egyedi futár azonosító számára.
+	public String generateRandomStringForUniqueCourierId() {
 		
 	    String upperAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	    String lowerAlphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -306,7 +332,7 @@ public class HomeController {
 	    String randomString = sb.toString();
 	    
 	    if(packageService.findByUniquePackageId(randomString) != null) {
-	    	generateRandomString();
+	    	generateRandomStringForUniqueCourierId();
 	    }
 	    return randomString;
 	}
@@ -315,7 +341,8 @@ public class HomeController {
 	public Box checkActualContainerFull(Package filledPackage) {
 		Set<Box> boxesFull = new HashSet<Box>();
 		
-		for(Package p : containerService.findById(actualContainerId).getPackages())
+		//for(Package p : containerService.findById(actualContainerId).getPackages())
+		for(Package p : containerService.findByIpAddress(request.getRemoteAddr()).getPackages())
 		{
 			boxesFull.add(p.getBox());
 		}
@@ -355,16 +382,18 @@ public class HomeController {
 	@PostMapping("/containeremptyingform")
 	public String containerEmptyingForm(Model model, Principal principal) {
 		String message = "";
-		for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
-			if(actualPackage.getShippingFrom().getId() == actualContainerId) {
+		//for(Package actualPackage : containerService.findById(actualContainerId).getPackages()) {
+		for(Package actualPackage : containerService.findByIpAddress(request.getRemoteAddr()).getPackages()) {
+			//if(actualPackage.getShippingFrom().getId() == actualContainerId) {
+			if(actualPackage.getShippingFrom().getId() == containerService.findByIpAddress(request.getRemoteAddr()).getId()) { 
 				
 				message += "Vedd ki a(z) " + actualPackage.getUniquePackageId() + " számú csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszből.\n";
 				
-				actualPackage.setContainers(null);
+				//actualPackage.setContainers(null);
+				
+				actualPackage.setContainer(null);
 				actualPackage.setBox(null);
-				//actualPackage.setCourier(courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()));
 				actualPackage.setCourier(courierService.findByUniqueCourierId(principal.getName()));
-				//courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages().add(actualPackage);
 				courierService.findByUniqueCourierId(principal.getName()).getPackages().add(actualPackage);
 				packageService.savePackage(actualPackage);
 			}
@@ -373,14 +402,17 @@ public class HomeController {
 		return "containeremptying";
 	}
 
-	//Értesítés a csomag feladásáról. Email küldése a csomag átvevőjének.
-	public void sendPackageNotice(Package actualPackage) {
+	//Értesítés a csomag feladásáról. Adatok kiírása szöveges fájlba.
+	//A fájl tartalma megegyezik az elküldött email tartalmával.
+	public void sendPackageTextNotice(Package actualPackage) {
 		try {
 			FileWriter fw = new FileWriter(actualPackage.getReceiverEmailAddress() + ".txt");
 			
-			fw.write("Csomagot adtak fel Önnek a quickpost rendszerben.\n");
+			fw.write("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + "." 
+					+ " Csomagot adtak fel Önnek a quickpost rendszerben.\n\n");
 			fw.write("A feladás helye: " + actualPackage.getShippingFrom().getPostCode() + " " + actualPackage.getShippingFrom().getCity()
 					+ " " + actualPackage.getShippingFrom().getAddress() + "\n");
+			fw.write("A feladás ideje: " + actualPackage.getSendingDate() + " " + actualPackage.getSendingTime() + "\n");
 			fw.write("A feladó neve: " + actualPackage.getUser().getLastName() + " " + actualPackage.getUser().getFirstName() + "\n");
 			fw.write("A csomag ára: " + actualPackage.getPrice() + " Ft\n");
 			fw.close();
@@ -398,13 +430,18 @@ public class HomeController {
 	public String containerFillingForm(Model model, Principal principal) {
 		String message = "";
 		
-		//for(Package actualPackage : courierService.findById(CourierServiceImpl.actualLoggedInCourier.getId()).getPackages()) {
 			for(Package actualPackage : courierService.findByUniqueCourierId(principal.getName()).getPackages()) {
-			if(actualContainerId == actualPackage.getShippingTo().getId() && checkActualContainerFull(actualPackage) != null) {
+			//if(actualContainerId == actualPackage.getShippingTo().getId() && checkActualContainerFull(actualPackage) != null) {
+				if(containerService.findByIpAddress(request.getRemoteAddr()).getId() == actualPackage.getShippingTo().getId() && checkActualContainerFull(actualPackage) != null) { 
 				actualPackage.setCourier(null);
 				actualPackage.setBox(checkActualContainerFull(actualPackage));
-				containerService.findById(actualContainerId).getPackages().add(actualPackage);
-				actualPackage.getContainers().add(containerService.findById(actualContainerId));
+				//containerService.findById(actualContainerId).getPackages().add(actualPackage);
+				containerService.findByIpAddress(request.getRemoteAddr()).getPackages().add(actualPackage); 
+				//actualPackage.getContainers().add(containerService.findById(actualContainerId));
+				
+				//actualPackage.getContainers().add(containerService.findByIpAddress(request.getRemoteAddr()));
+				
+				actualPackage.setContainer(containerService.findByIpAddress(request.getRemoteAddr()));
 				actualPackage.setPackageIsShipped(true);
 				
 				long millis = System.currentTimeMillis();
@@ -413,7 +450,8 @@ public class HomeController {
 				
 				packageService.savePackage(actualPackage);
 				
-				packageIsShippedNotice(actualPackage);
+				packageIsShippedTextNotice(actualPackage);
+				packageIsShippedEmailNotice(actualPackage);
 				
 				message += "Tedd be a(z) " + actualPackage.getUniquePackageId() + " számú csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszbe.\n";
 
@@ -423,12 +461,14 @@ public class HomeController {
 		return "containerfilling";
 	}
 
-	//Értesítés a csomag megérkezéséről. Email küldése a csomag átvevőjének.
-	public void packageIsShippedNotice(Package actualPackage) {
+	//Értesítés a csomag megérkezéséről. Adatok kiírása szöveges fájlba.
+	//A fájl tartalma megegyezik az elküldött email tartalmával.
+	public void packageIsShippedTextNotice(Package actualPackage) {
 		try {
 			FileWriter fw = new FileWriter(actualPackage.getReceiverEmailAddress() + "2" + ".txt");
 			
-			fw.write("A csomagja megérkezett.\n");
+			fw.write("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + "." 
+					+ " A csomagja " + actualPackage.getShippingDate() + " " + actualPackage.getSendingTime() + "-kor megérkezett.\n\n");
 			fw.write("Itt tudja átvenni: " + actualPackage.getShippingTo().getPostCode() + " " + actualPackage.getShippingTo().getCity()
 					+ " " + actualPackage.getShippingTo().getAddress() + "\n");
 			fw.write("A csomag ára: " + actualPackage.getPrice() + "\n");
@@ -446,7 +486,8 @@ public class HomeController {
 	public String packetTakingForm(@RequestParam String uniquePackageId, Model model) {
 		Package actualPackage = packageService.findByUniquePackageId(uniquePackageId);
 		
-		if(actualPackage != null && actualPackage.isPackageIsShipped() && actualPackage.getShippingTo().getId() == actualContainerId && actualPackage.isPackageIsTaken() == false) {
+		//if(actualPackage != null && actualPackage.isPackageIsShipped() && actualPackage.getShippingTo().getId() == actualContainerId && actualPackage.isPackageIsTaken() == false) {
+		if(actualPackage != null && actualPackage.isPackageIsShipped() && actualPackage.getShippingTo().getId() == containerService.findByIpAddress(request.getRemoteAddr()).getId() && actualPackage.isPackageIsTaken() == false) { 
 			//model.addAttribute("packageTakingMessage", "Vedd ki a csomagot a " + actualPackage.getBox().getId() + ". rekeszből.");
 			model.addAttribute("packageTakingMessage", "<div class=\"info-msg\" >\r\n"
 					+ "					<span>&#8505;</span><span> Vedd ki a csomagot a(z) " + actualPackage.getBox().getId() + ". rekeszből.</span>\r\n"
@@ -458,10 +499,13 @@ public class HomeController {
 			actualPackage.setTakingTime(new Time(millis));
 			actualPackage.setBox(null);
 			
-			actualPackage.setContainers(null);
+			//actualPackage.setContainers(null);
+			
+			actualPackage.setContainer(null);
 			packageService.savePackage(actualPackage);
 			
-			packageIsTakenNotice();
+			packageIsTakenTextNotice(actualPackage);
+			packageIsTakenEmailNotice(actualPackage);
 			
 		}
 		else{
@@ -473,9 +517,19 @@ public class HomeController {
 		return "packettaking";
 	}
 
-	//Értesítés a sikeres átvételről. Email küldése a csomag átvevőjének.
-	public void packageIsTakenNotice() {
-		
+	//Értesítés a sikeres csomag átvételről. Adatok kiírása szöveges fájlba.
+	//A fájl tartalma megegyezik az elküldött email tartalmával.
+	public void packageIsTakenTextNotice(Package actualPackage) {
+		try {
+			FileWriter fw = new FileWriter(actualPackage.getReceiverEmailAddress() + "2" + ".txt");
+			
+			fw.write("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + ".\n\n");
+			fw.write("Tájékoztatunk, hogy a " + actualPackage.getUniquePackageId() + " számú csomagjához kapcsolódó tranzakciót "
+					+ actualPackage.getTakingDate() + " " + actualPackage.getTakingTime() + " időpontban történt teljesülés címén a QUICKPOST lezárja.");
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	//Megadott jelszó ellenőrzése.
@@ -501,6 +555,112 @@ public class HomeController {
         return m.matches();
 	}
 	
+	//Email értesítés a csomag feladásáról.
+	public void sendPackageEmailNotice(Package actualPackage) {
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+		
+		message.setFrom("quickpost@freemail.hu");
+		message.setTo(actualPackage.getReceiverEmailAddress());
+		message.setSubject("Csomagfeladás");
+		message.setText("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + "." 
+				+ " Csomagot adtak fel Önnek a quickpost rendszerben.\n\n"
+				+ "A feladás helye: " + actualPackage.getShippingFrom().getPostCode() + " " + actualPackage.getShippingFrom().getCity()
+				+ " " + actualPackage.getShippingFrom().getAddress() + "\n"
+				+ "A feladás ideje: " + actualPackage.getSendingDate() + " " + actualPackage.getSendingTime() + "\n"
+				+ "A feladó neve: " + actualPackage.getUser().getLastName() + " " + actualPackage.getUser().getFirstName() + "\n"
+				+ "A csomag ára: " + actualPackage.getPrice() + " Ft\n");
+		javaMailSender.send(message);
+		
+		System.out.println("Email sikeresen elküldve");
+	}
+	
+	//Email értesítés a csomag megérkezéséről.
+	public void packageIsShippedEmailNotice(Package actualPackage) {
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+		
+		message.setFrom("quickpost@freemail.hu");
+		message.setTo(actualPackage.getReceiverEmailAddress());
+		message.setSubject("Csomagja megérkezett");
+		message.setText("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + "." 
+				+ " A csomagja " + actualPackage.getShippingDate() + " " + actualPackage.getShippingTime() + "-kor megérkezett.\n\n"
+				+ "Itt tudja átvenni: " + actualPackage.getShippingTo().getPostCode() + " " + actualPackage.getShippingTo().getCity()
+				+ " " + actualPackage.getShippingTo().getAddress() + "\n"
+				+ "A csomag ára: " + actualPackage.getPrice() + " Ft\n"
+				+ "A nyitó kód: " + actualPackage.getUniquePackageId() + "\n");
+		javaMailSender.send(message);
+		
+	}
+	
+	//Email értesítés a sikeres csomag átvételről.
+	public void packageIsTakenEmailNotice(Package actualPackage) {
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+		
+		message.setFrom("quickpost@freemail.hu");
+		message.setTo(actualPackage.getReceiverEmailAddress());
+		message.setSubject("Sikeres csomagátvétel");
+		message.setText("Kedves " + actualPackage.getReceiverLastName() + " " + actualPackage.getReceiverFirstName() + ".\n\n" 
+				+ "Tájékoztatunk, hogy a " + actualPackage.getUniquePackageId() + " számú csomagjához kapcsolódó tranzakciót "
+				+ actualPackage.getTakingDate() + " " + actualPackage.getTakingTime() + " időpontban történt teljesülés címén a QUICKPOST lezárja.");
+		javaMailSender.send(message); 
+	}
+	
+	//Regisztráció aktiválása
+	@RequestMapping(path = "/activation/{activationCode}" , method = RequestMethod.GET)
+	public String signUpActivation(@PathVariable("activationCode") String activationCode) {
+		
+		userService.userActivation(activationCode);
+		return "auth/login";
+	}
+	
+	//Random string generálása az aktivációs kód számára
+	public String generateRandomStringForActivationCode() {
+	    String upperAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	    String lowerAlphabet = "abcdefghijklmnopqrstuvwxyz";
+	    String numbers = "0123456789";
+
+	    String alphaNumeric = upperAlphabet + lowerAlphabet + numbers;
+
+	    StringBuilder sb = new StringBuilder();
+
+	    Random random = new Random();
+
+	    int length = 8;
+
+	    for(int i = 0; i < length; i++) {
+
+	      int index = random.nextInt(alphaNumeric.length());
+
+	      char randomChar = alphaNumeric.charAt(index);
+
+	      sb.append(randomChar);
+	    }
+
+	    String randomString = sb.toString();
+	    
+	    if(packageService.findByUniquePackageId(randomString) != null) {
+	    	generateRandomStringForUniqueCourierId();
+	    }
+	    return randomString;
+	}
+
+	//Email értesítés a regisztrációról. Regisztrációs kód küldése email-ben.
+	public void accountActivationEmailNotice(User actualUser) {
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+		
+		message.setFrom("quickpost@freemail.hu");
+		message.setTo(actualUser.getEmailAddress());
+		message.setSubject("Regisztráció aktiválása");
+		message.setText("Kedves " + actualUser.getLastName() + " " + actualUser.getFirstName() + "\n\n"
+				+ "Köszönjük hogy regisztrált a quickpost rendszerbe.\n"
+				+ "A regisztráció véglegesítéséhez kattintson az alábbi linkre.\n"
+				+ "http://192.168.0.13:8080/activation/" + actualUser.getActivationCode()
+				+ "");
+		javaMailSender.send(message);
+	}
 }
 
 

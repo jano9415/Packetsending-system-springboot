@@ -5,23 +5,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-
 import org.springframework.security.core.userdetails.UserDetailsService;
-
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.security.web.SecurityFilterChain;
 
-
-import com.packetsending_system_springboot.service.CourierServiceImpl;
-import com.packetsending_system_springboot.service.UserService;
 import com.packetsending_system_springboot.service.UserServiceImpl;
 
 
@@ -30,7 +22,6 @@ import com.packetsending_system_springboot.service.UserServiceImpl;
 public class SecurityConfig /*extends WebSecurityConfigurerAdapter*/ {
 	
 	//Első
-	
 
 	@Bean
 	public UserDetailsService userDetailsService() {
@@ -73,6 +64,7 @@ public class SecurityConfig /*extends WebSecurityConfigurerAdapter*/ {
 			.antMatchers("/containeremptying").hasAnyAuthority("courier")
 			.antMatchers("/containeremptyingform").hasAnyAuthority("courier")
 			.antMatchers("/containerfillingform").hasAnyAuthority("courier")
+			.antMatchers("/activation/**").permitAll()
 			.anyRequest().authenticated()
 			.and()
 		.formLogin()

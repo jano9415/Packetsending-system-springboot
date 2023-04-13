@@ -27,39 +27,40 @@ public class Package {
 	private String uniquePackageId;
 	
 	//Kétoldali kapcsolat a Package és a User között.
-	//Idegen kulcs a User tábla id attribútumára
+	//Idegen kulcs a User tábla id attribútumára.
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
 	//Egy csomag csak egy regisztrált felhasználóhoz tartozhat.
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
 	
-	//Kétoldali kapcsolat a Package és a Container között
-	//Idegen kulcs a Container tábla id attribútumára
+	//Kétoldali kapcsolat a Package és a Container között.
+	//Idegen kulcs a Container tábla id attribútumára.
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
 	//Egy csomag objektum egy feladási container objektumot tartalmaz.
 	@ManyToOne
 	//@JoinColumn(name ="container_id")
 	private Container shippingFrom;
 	
-	//Kétoldali kapcsolat a Package és a Container között
-	//Idegen kulcs a Container tábla id attribútumára
+	//Kétoldali kapcsolat a Package és a Container között.
+	//Idegen kulcs a Container tábla id attribútumára.
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
 	//Egy csomag objektum egy érkezési container objektumot tartalmaz.
 	@ManyToOne
 	//@JoinColumn(name = "container_id")
 	private Container shippingTo;
 	
-	//Kétoldali kapcsolat a Package és a Box között
-	//Idegen kulcs a Box tábla id attribútumára
+	//Kétoldali kapcsolat a Package és a Box között.
+	//Idegen kulcs a Box tábla id attribútumára.
 	//Ez az osztály a birtokos, ez tartalmazza az idegen kulcsot.
 	//Egy csomag objektum egy box objektumot tartalmaz. 
 	@ManyToOne
 	@JoinColumn(name = "box_id")
 	private Box box;
 	
-	//packages_during_shipping kapcsolótábla
-	//ez az osztály a birtokos
+	//Packages_during_shipping kapcsolótábla.
+	//Ez az osztály a birtokos.
+	//Egy csomag objektum egy futárhoz tartozhat.
 	@ManyToOne
 	@JoinTable(
 			name = "packages_during_shipping",
@@ -67,21 +68,21 @@ public class Package {
 			inverseJoinColumns = {@JoinColumn(name = "courier_id")})
 	private Courier courier;
 	
-	//packages_in_container kapcsolótábla
-	//ez az osztály a birtokos
-	@ManyToMany(/*fetch= FetchType.EAGER*/)
+	//Packages_in_container kapcsolótábla.
+	//Ez az osztály a birtokos.
+	/*@ManyToMany
 	@JoinTable(
 			name = "packages_in_container",
 			joinColumns = {@JoinColumn(name = "package_id")},
 			inverseJoinColumns = {@JoinColumn(name = "container_id")})
-	private Set<Container> containers = new HashSet<Container>();
+	private Set<Container> containers = new HashSet<Container>();*/
 	
-	/*@ManyToMany
+	@ManyToOne
 	@JoinTable(
 			name = "packages_in_container",
-			joinColumns = {@JoinColumn(name = "box_id")},
-			inverseJoinColumns = {@JoinColumn(name = "package_id")})
-	private Set<Box> boxes = new HashSet<Box>();*/
+			joinColumns = {@JoinColumn(name = "package_id")},
+			inverseJoinColumns = {@JoinColumn(name = "container_id")})
+	private Container container;
 	
 	private int width;
 	
@@ -218,8 +219,7 @@ public class Package {
 	public String getReceiverFirstName() {
 		return receiverFirstName;
 	}
-
-
+	
 
 	public void setReceiverFirstName(String receiverFirstName) {
 		this.receiverFirstName = receiverFirstName;
@@ -329,7 +329,7 @@ public class Package {
 
 
 
-	public Set<Container> getContainers() {
+	/*public Set<Container> getContainers() {
 		return containers;
 	}
 
@@ -337,12 +337,26 @@ public class Package {
 
 	public void setContainers(Set<Container> containers) {
 		this.containers = containers;
-	}
+	}*/
+	
+	
 
 
 
 	public Box getBox() {
 		return box;
+	}
+
+
+
+	public Container getContainer() {
+		return container;
+	}
+
+
+
+	public void setContainer(Container container) {
+		this.container = container;
 	}
 
 

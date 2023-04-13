@@ -37,6 +37,10 @@ public class User {
 	
 	private String phoneNumber;
 	
+	private String activationCode;
+	
+	private boolean enabled;
+	
 	//Kétoldali kapcsolat a package és a user között.
 	//A package osztály a birtokos.
 	//Az idegen kulcs a package táblában van.
@@ -80,6 +84,7 @@ public class User {
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
+	
 
 	public String getPassword() {
 		return password;
@@ -152,6 +157,24 @@ public class User {
 	public void setRole(Role role) {
 		this.role = role;
 	}
+
+	public String getActivationCode() {
+		return activationCode;
+	}
+
+	public void setActivationCode(String activationCode) {
+		this.activationCode = activationCode;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
+	
 	
 	
 	

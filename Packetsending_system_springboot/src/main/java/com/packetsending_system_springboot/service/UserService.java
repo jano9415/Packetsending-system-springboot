@@ -15,7 +15,12 @@ public interface UserService {
 	//Keresés id alapján
 	public User findById(long id);
 	
-	//Bejelentkezett felhasználó lekérése
-	//public User getActualLoggedInUser();
+	//Keresés aktivációs kód szerint.
+	public User findByActivationCode(String activationCode);
+	
+	//Felhasználó aktiválása.
+	public String userActivation(String activationCode);
+	
+	
 	
 }

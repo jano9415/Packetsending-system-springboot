@@ -28,6 +28,8 @@ public class Container {
 	
 	private int amountOfBoxes;
 	
+	private String ipAddress;
+	
 	//Kétoldali kapcsolat a container és a package között.
 	//A package osztály a birtokos.
 	//A package táblában van az idegen kulcs.
@@ -42,18 +44,18 @@ public class Container {
 	@OneToMany(mappedBy = "shippingTo")
 	private Set<Package> packagesTo = new HashSet<Package>();
 	
-	//packages_in_container kapcsolótábla
-	//a package osztály a birtokos
-	@ManyToMany(mappedBy = "containers")
-	private Set<Package> packages = new HashSet<Package>();
+	//Packages_in_container kapcsolótábla
+	//A package osztály a birtokos
+	//Egy container tartalmaz több csomagot.
+	/*@ManyToMany(mappedBy = "containers")
+	private Set<Package> packages = new HashSet<Package>();*/
 	
-	//Próba
-	/*@ManyToMany
-	@JoinTable(
-			name = "packages_in_container",
-			joinColumns = {@JoinColumn(name = "container_id")},
-			inverseJoinColumns = {@JoinColumn(name = "box_id")})
-	private Set<Box> boxes = new HashSet<Box>();*/
+	//Packages_in_container kapcsolótábla
+	//A package osztály a birtokos
+	//Egy container tartalmaz több csomagot.
+	@OneToMany(mappedBy = "container")
+	private Set<Package> packages = new HashSet<Package>();
+
 	
 	public Container() {
 
@@ -65,6 +67,7 @@ public class Container {
 		this.city = city;
 		this.address = address;
 		this.amountOfBoxes = amountOfBoxes;
+		
 	}
 
 
@@ -136,21 +139,14 @@ public class Container {
 	}
 
 
-	/*public Set<Box> getBoxes() {
-		return boxes;
+	public String getIpAddress() {
+		return ipAddress;
 	}
 
 
-	public void setBoxes(Set<Box> boxes) {
-		this.boxes = boxes;
-	}*/
-	
-	
-	
-	
-	
-	
-	
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
 	
 	
 
