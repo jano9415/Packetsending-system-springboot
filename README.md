@@ -20,7 +20,8 @@ Courier page:
 Email notification:
 
 
-![Packen sending springboot3](https://github.com/jano9415/Packetsending-system-springboot/assets/87268161/331262c1-d9e8-4587-9167-11eedbfae1d6)
+![Packen sending springboot3](https://github.com/jano9415/Packetsending-system-springboot/assets/87268161/1d583496-495a-4512-8adf-9d56e1c5e330)
+
 
 
 Packet picking up:
